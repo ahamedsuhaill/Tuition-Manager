@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tuition Manager</title>
+
+    <!-- Fonts: Mukta Malar for Tamil, Inter for English -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Mukta+Malar:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 id="page-title" data-i18n="app_title">ட்யூஷன் மேலாளர்</h1>
+                <button id="lang-toggle" class="btn-icon" aria-label="Change Language">
+                    <span class="lang-text">தமிழ்</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main id="main-content">
+
+            <!-- VIEW: DASHBOARD (டாஷ்போர்ட்) -->
+            <section id="view-dashboard" class="view active">
+                <div class="welcome-banner">
+                    <h2 data-i18n="welcome">வணக்கம்!</h2>
+                    <p data-i18n="tagline">உங்கள் வகுப்புகளை எளிதாக நிர்வகிக்கவும்.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">🎓</div>
+                        <div class="stat-info">
+                            <h3 data-i18n="total_students">மொத்த மாணவர்கள்</h3>
+                            <p class="stat-value" id="dash-total-students">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card purple">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3 data-i18n="today_present">இன்று வருகை</h3>
+                            <p class="stat-value"><span id="dash-present-count">0</span> / <span
+                                    id="dash-active-count">0</span></p>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3 data-i18n="fees_collected">இம்மாத வசூல்</h3>
+                            <p class="stat-value">₹<span id="dash-fees-collected">0</span></p>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <h3 data-i18n="fees_pending">நிலுவை தொகை</h3>
+                            <p class="stat-value">₹<span id="dash-fees-pending">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h3 data-i18n="quick_actions">விரைவான செயல்கள்</h3>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="navigateTo('view-attendance')">
+                        <span class="icon">📅</span>
+                        <span data-i18n="mark_attendance">வருகை பதிவு</span>
+                    </button>
+                    <button class="action-btn" onclick="openFeeModal()">
+                        <span class="icon">💰</span>
+                        <span data-i18n="add_fee">கட்டணம் சேர்</span>
+                    </button>
+                    <button class="action-btn" onclick="navigateTo('view-reports')">
+                        <span class="icon">📊</span>
+                        <span data-i18n="reports">அறிக்கைகள்</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW: STUDENTS (மாணவர்கள்) -->
+            <section id="view-students" class="view">
+                <div class="toolbar">
+                    <div class="search-bar">
+                        <input type="text" id="student-search" data-i18n-placeholder="search_placeholder"
+                            placeholder="தேடுக...">
+                    </div>
+                    <button class="btn-primary" onclick="openStudentModal()">
+                        <span class="plus">+</span> <span data-i18n="add_student">மாணவர் சேர்</span>
+                    </button>
+                </div>
+                <div id="students-list" class="list-container">
+                    <!-- Student Cards Injected Here -->
+                </div>
+            </section>
+
+            <!-- VIEW: ATTENDANCE (வருகை) -->
+            <section id="view-attendance" class="view">
+                <div class="attendance-controls">
+                    <label data-i18n="date">தேதி</label>
+                    <input type="date" id="att-date">
+                </div>
+
+                <div class="attendance-summary">
+                    <div class="att-stat"><span class="dot green"></span> <span data-i18n="present">Present</span>:
+                        <span id="att-count-present">0</span></div>
+                    <div class="att-stat"><span class="dot red"></span> <span data-i18n="absent">Absent</span>: <span
+                            id="att-count-absent">0</span></div>
+                </div>
+
+                <div class="toolbar">
+                    <button class="btn-outline" onclick="markAllPresent()" data-i18n="mark_all_present">அனைவரும்
+                        வருகை</button>
+                </div>
+
+                <div id="attendance-list" class="list-container">
+                    <!-- Attendance Rows Injected Here -->
+                </div>
+
+                <div class="fab-container">
+                    <button class="btn-fab" onclick="saveAttendance()" id="btn-save-attendance">
+                        💾
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW: FEES (கட்டணம்) -->
+            <section id="view-fees" class="view">
+                <div class="toolbar">
+                    <button class="btn-primary full-width" onclick="openFeeModal()" data-i18n="add_new_fee">+ புதிய
+                        கட்டணம்</button>
+                </div>
+
+                <div class="tabs-row">
+                    <button class="tab-btn active" onclick="switchFeeTab('history')" data-i18n="history">வரலாறு</button>
+                    <button class="tab-btn" onclick="switchFeeTab('pending')" data-i18n="pending_list">நிலுவை
+                        பட்டியல்</button>
+                </div>
+
+                <div id="fee-history-view" class="fee-tab-content">
+                    <div class="filter-row">
+                        <select id="fee-filter-month">
+                            <!-- Options generated dynamically -->
+                        </select>
+                    </div>
+                    <div id="fee-list" class="list-container">
+                        <!-- Fee Transactions -->
+                    </div>
+                </div>
+
+                <div id="fee-pending-view" class="fee-tab-content hidden">
+                    <div id="pending-list" class="list-container">
+                        <!-- Pending Dues -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: REPORTS (அறிக்கைகள்) -->
+            <section id="view-reports" class="view">
+                <div class="report-controls">
+                    <label data-i18n="select_month">மாதம் தேர்வு செய்க</label>
+                    <input type="month" id="report-month">
+                    <button class="btn-primary" onclick="generateReport()" data-i18n="generate">உருவாக்கு</button>
+                </div>
+
+                <div id="report-output" class="hidden">
+                    <div class="report-card">
+                        <h3 data-i18n="monthly_summary">மாதாந்திர சுருக்கம்</h3>
+                        <div class="report-row">
+                            <span data-i18n="working_days">வேலை நாட்கள்:</span>
+                            <span id="rep-working-days" class="bold">0</span>
+                        </div>
+                        <div class="report-row">
+                            <span data-i18n="avg_attendance">சராசரி வருகை:</span>
+                            <span id="rep-avg-att">0%</span>
+                        </div>
+                        <div class="report-row">
+                            <span data-i18n="fees_collected">வசூல்:</span>
+                            <span class="green-text">₹<span id="rep-collected">0</span></span>
+                        </div>
+                        <div class="report-row">
+                            <span data-i18n="fees_pending">நிலுவை:</span>
+                            <span class="red-text">₹<span id="rep-pending">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="report-actions">
+                        <button class="btn-secondary" onclick="exportReportText()" data-i18n="copy_summary">வாட்ஸ்அப்
+                            சுருக்கம் நகலெடு</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: SETTINGS / BACKUP -->
+            <section id="view-settings" class="view">
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <h3 data-i18n="app_language">மொழி (Language)</h3>
+                        <div class="toggle-group">
+                            <button class="btn-sm active" id="btn-lang-ta" onclick="setLanguage('ta')">தமிழ்</button>
+                            <button class="btn-sm" id="btn-lang-en" onclick="setLanguage('en')">English</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <h3 data-i18n="backup_restore">தேர்வு & மீட்பு (Backup & Restore)</h3>
+                        <p class="desc-text" data-i18n="backup_desc">உங்கள் தரவைப் பாதுகாப்பாக வைத்திருக்க, அவ்வப்போது
+                            காப்புப் பிரதி எடுக்கவும்.</p>
+
+                        <button class="btn-secondary full-width" onclick="backupData()">
+                            📥 <span data-i18n="download_backup">தரவிறக்கம் (Backup)</span>
+                        </button>
+
+                        <div class="divider"></div>
+
+                        <label class="btn-secondary full-width file-upload-btn">
+                            📤 <span data-i18n="restore_backup">தரவை மீட்டமை (Restore)</span>
+                            <input type="file" id="restore-file" accept=".json" onchange="restoreData(this)">
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="navigateTo('view-dashboard')">
+                <span class="icon">🏠</span>
+                <span class="label" data-i18n="home">முகப்பு</span>
+            </button>
+            <button class="nav-item" onclick="navigateTo('view-students')">
+                <span class="icon">👨‍🎓</span>
+                <span class="label" data-i18n="students">மாணவர்</span>
+            </button>
+            <button class="nav-item" onclick="navigateTo('view-attendance')">
+                <span class="icon">✅</span>
+                <span class="label" data-i18n="attendance">வருகை</span>
+            </button>
+            <button class="nav-item" onclick="navigateTo('view-fees')">
+                <span class="icon">💵</span>
+                <span class="label" data-i18n="fees">கட்டணம்</span>
+            </button>
+            <button class="nav-item" onclick="navigateTo('view-settings')">
+                <span class="icon">⚙️</span>
+                <span class="label" data-i18n="settings">அமைப்பு</span>
+            </button>
+        </nav>
+
+        <!-- MODALS -->
+
+        <!-- Add/Edit Student Modal -->
+        <div id="modal-student" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-student-title" data-i18n="add_student">புதிய மாணவர்</h2>
+                    <button class="btn-close" onclick="closeModal('modal-student')">&times;</button>
+                </div>
+                <form id="form-student">
+                    <input type="hidden" id="st-id">
+
+                    <div class="form-group">
+                        <label data-i18n="student_name">பெயர்</label>
+                        <input type="text" id="st-name" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="age">வயது</label>
+                            <input type="number" id="st-age">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="class">வகுப்பு</label>
+                            <select id="st-class">
+                                <option value="LKG">LKG</option>
+                                <option value="UKG">UKG</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="parent_mobile">பெற்றோர் & மொபைல்</label>
+                        <input type="text" id="st-parent" data-i18n-placeholder="parent_name"
+                            placeholder="பெற்றோர் பெயர்">
+                        <input type="tel" id="st-mobile" pattern="[0-9]{10}" placeholder="9998887776"
+                            style="margin-top: 5px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="subjects">பாடங்கள்</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="subject" value="Maths"> Maths</label>
+                            <label><input type="checkbox" name="subject" value="Science"> Science</label>
+                            <label><input type="checkbox" name="subject" value="English"> English</label>
+                            <label><input type="checkbox" name="subject" value="Tamil"> Tamil</label>
+                            <label><input type="checkbox" name="subject" value="Social"> Social</label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-i18n="fee_plan">கட்டண முறை</label>
+                            <select id="st-fee-plan">
+                                <option value="Monthly">Monthly</option>
+                                <option value="Weekly">Weekly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="amount">தொகை (₹)</label>
+                            <input type="number" id="st-fee-amount" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary full-width" data-i18n="save">சேமிக்க</button>
+                    <!-- Delete button only shows for Edit mode via JS -->
+                    <button type="button" id="btn-delete-student" class="btn-danger full-width hidden"
+                        style="margin-top: 10px;" data-i18n="delete">நீக்குக</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Fee Modal -->
+        <div id="modal-fee" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 data-i18n="add_fee">கட்டணம் சேர்</h2>
+                    <button class="btn-close" onclick="closeModal('modal-fee')">&times;</button>
+                </div>
+                <form id="form-fee">
+                    <div class="form-group">
+                        <label data-i18n="student">மாணவர்</label>
+                        <select id="fee-student" required onchange="autoFillFeeData()"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="month">மாதம்</label>
+                        <input type="month" id="fee-month" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="amount_paid">செலுத்திய தொகை</label>
+                        <input type="number" id="fee-amount" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="payment_mode">முறை</label>
+                        <select id="fee-mode">
+                            <option value="Cash">Cash (ரொக்கம்)</option>
+                            <option value="GPay">GPay</option>
+                            <option value="PhonePe">PhonePe</option>
+                            <option value="Bank">Bank Transfer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="notes">குறிப்பு (Notes)</label>
+                        <input type="text" id="fee-notes">
+                    </div>
+
+                    <button type="submit" class="btn-success full-width" data-i18n="save_payment">பதிவு செய்</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
